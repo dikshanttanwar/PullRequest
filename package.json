@@ -1,0 +1,21 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "description": "This is an Developer's Tinder",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "Node",
+    "JS",
+    "Backend",
+    "Tinder"
+  ],
+  "author": "Dikshant Tanwar",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
