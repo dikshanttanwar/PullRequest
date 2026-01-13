@@ -1,58 +1,136 @@
 const express = require("express");
 const app = express();
 const { connectDB } = require("./config/db_connect");
-const { adminAuth, userAuth, rateLimiter } = require("./middlewares/auth");
+// const { adminAuth, userAuth, rateLimiter } = require("./middlewares/auth");
 const User = require("./models/users");
 app.use(express.json());
 
+app.patch("/updateUserData", async (req, res, next) => {
+  let emailId = req.body.email;
+  let data = req.body;
+  console.log(emailId);
+  let response = await User.findOneAndUpdate({ email: emailId }, data);
+  // let response = User.findOne({ email: emailId });
+
+  res.send(response);
+});
+
+app.patch("/updateData", async (req, res, next) => {
+  let userId = req.body.userId;
+  console.log(userId);
+  let data = req.body;
+  let response = await User.findByIdAndUpdate(userId, data, {
+    // returnDocument: "after",
+    lean: true,
+  });
+  res.send(response);
+});
+
+app.get("/findSingle", async (req, res, next) => {
+  try {
+    let response = await User.findOne(null);
+    // let response = await User.findById(null);
+    if (!response) {
+      let err = new Error(response);
+      return next(err);
+    }
+    res.send(response);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post("/deleteUser", async (req, res, next) => {
+  let userName = req.body.email;
+  let result = await User.deleteMany({ email: userName });
+  res.send(result);
+});
+
+app.patch("/updateUser/:userId", async (req, res, next) => {
+  try {
+    let userId = req.params.userId;
+    console.log(userId);
+    let { firstName, lastName } = req.body;
+    let response = await User.findOneAndUpdate(
+      { _id: userId },
+      { firstName, lastName }
+    );
+
+    if (!response) {
+      res.status(500).send("Something Went Wrong!!");
+    }
+
+    res.send("User Updated Successfully!!");
+  } catch (err) {
+    res.send(err);
+  }
+});
+
+app.post("/createUser", async (req, res, next) => {
+  let response = new User(req.body);
+  await response.save();
+  res.send(response);
+});
+
+app.get("/getById", async (req, res, next) => {
+  // let result = await User.findById("696224f120ba83092c8e7019");
+  // let result = await User.exists({firstName : "Dikshant"});
+  // let result = await User.find({firstName : "Dikshant"});
+  res.send(result);
+});
+
+app.get("/getAllNames", async (req, res, next) => {
+  let users = await User.find({}).select("firstName lastName");
+  let cleanData = users.map((singleUser) => {
+    return {
+      firstname: singleUser.firstName,
+      lastName: singleUser.lastName,
+    };
+  });
+  res.send(cleanData);
+});
+
+app.use("/signup", async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (user) {
+    const err = new Error("User Already Exist");
+    err.status = 404;
+    next(err);
+  } else {
+    next();
+  }
+});
+
+app.get("/getAll", async (req, res, next) => {
+  let totalUsers = await User.countDocuments({});
+  res.send(totalUsers);
+});
+
+app.get("/feed", async (req, res, next) => {
+  // const user = await User.find({ age: 22 });
+  const user = await User.countDocuments();
+  res.send(user);
+});
+
+app.post("/signup", async (req, res, next) => {
+  // const user = new User(userObj);
+  const user = new User(req.body);
+
+  await user.save();
+  res.status(200).send(req.body);
+});
+
 app.use(/.*/, (req, res, next) => {
-  res.status(404).send("Page doesn't exist!");
+  res.status(404).send("Page Not Found!!!");
 });
 
 app.use((err, req, res, next) => {
-  res.status(404).json({
+  let statusCode = err.status || 404;
+  res.status(statusCode).json({
     error: true,
-    errorMessage: err.message || "Unauthorised access!",
+    errorMessage: err.message || "User Not Found!!!",
   });
 });
-
-// app.use("/signup", async (req, res, next) => {
-//   const user = await User.findOne({ email: req.body.email });
-//   if (user) {
-//     const err = new Error("User Already Exist");
-//     err.status = 404;
-//     next(err);
-//   } else {
-//     next();
-//   }
-// });
-
-// app.get("/getAll", async (req, res, next) => {
-//   let totalUsers = await User.countDocuments({});
-//   res.send(totalUsers);
-// });
-
-// app.get("/feed", async (req, res, next) => {
-//   // const user = await User.find({ age: 22 });
-//   const user = await User.countDocuments({ age: 22 });
-//   res.send(user);
-// });
-
-// app.post("/signup", async (req, res, next) => {
-//   // const user = new User(userObj);
-//   const user = new User(req.body);
-
-//   await user.save();
-//   res.status(200).send(req.body);
-// });
-
-// app.use((err, req, res, next) => {
-//   let statusCode = err.status || 404;
-//   res.status(statusCode).json({
-//     error: true,
-//     errorMessage: err.message || "User Not Found!!!",
-//   });
-// });
 
 connectDB()
   .then(() => {
