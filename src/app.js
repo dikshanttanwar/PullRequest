@@ -17,15 +17,18 @@ app.post("/createUser", async (req, res, next) => {
   res.send("User Addedd Successfully!!");
 });
 
-app.delete("/deleteUser", async (req, res, next) => {
-  let response = await User.deleteMany({
-    email: req.body.email,
-  });
-
-  if (response.deletedCount > 0) {
-    res.send(`User Deleted Successfully!!!, ${response.deletedCount}`);
-  } else {
-    res.send(`No user found!!, ${response.deletedCount}`);
+app.delete("/deleteUser/:id", async (req, res, next) => {
+  let userId = req.params.id;
+  try {
+    let response = await User.findByIdAndDelete(userId);
+    console.log(response);
+    if (response) {
+      res.status(201).send("User Deleted Successfully!");
+    } else {
+      throw new Error("Not Working properly!!!!");
+    }
+  } catch (err) {
+    res.status(500).send("Something went wrong!!! " + err.message);
   }
 });
 

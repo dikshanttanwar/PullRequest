@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-
+const validator = require("validator");
+const { default: isURL } = require("validator/lib/isURL");
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -20,12 +21,27 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
+      validate(e) {
+        if (
+          !validator.isEmail(e, {
+            blacklisted_chars: "#$!",
+            host_blacklist: ["cyntexa.com", "temp.com"],
+          })
+        ) {
+          throw new Error("Email is not valid!!");
+        }
+      },
     },
     password: {
       type: String,
       required: true,
-      minLength :6,
-      maxLength : 40
+      minLength: 6,
+      maxLength: 40,
+      validate(e) {
+        if (!validator.isStrongPassword(e)) {
+          throw new Error("Password must be strong!!");
+        }
+      },
     },
     age: {
       type: Number,
@@ -51,11 +67,21 @@ const userSchema = new mongoose.Schema(
     },
     photoUrl: {
       type: String,
+      validate(e) {
+        if (!isURL(e)) {
+          throw new Error("Enter valid URL!!");
+        }
+      },
     },
     about: {
       type: String,
       maxLength: 255,
       default: "Feeling Happy :)",
+      validate(e) {
+        if (!e) {
+          throw new Error("Field cannot be null!!");
+        }
+      },
     },
     skills: {
       type: [String],
@@ -67,10 +93,6 @@ const userSchema = new mongoose.Schema(
           throw new Error("Maximin of 10 skills only");
         }
       },
-    },
-    user: {
-      type: String,
-      default: "user",
     },
   },
   { timestamps: true },
