@@ -36,7 +36,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minLength: 6,
-      maxLength: 40,
       validate(e) {
         if (!validator.isStrongPassword(e)) {
           throw new Error("Password must be strong!!");
@@ -46,7 +45,6 @@ const userSchema = new mongoose.Schema(
     age: {
       type: Number,
       min: 18,
-      required: true,
       validate(e) {
         if (e < 18) {
           throw new Error("Must be 18 years old!");
@@ -55,7 +53,6 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      required: true,
       validate(value) {
         if (!value) {
           throw new Error("Please enter your Gender!!");
