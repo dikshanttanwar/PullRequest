@@ -3,6 +3,7 @@ const authRouter = express.Router();
 const bcrypt = require("bcrypt");
 const { signupValidation } = require("../utils/validation");
 const User = require("../models/users");
+const { userAuth } = require("../middlewares/userAuth");
 
 authRouter.post("/signup", async (req, res, next) => {
   try {
@@ -50,50 +51,10 @@ authRouter.post("/login", async (req, res, next) => {
   }
 });
 
-authRouter.delete("/deleteUser/:id", async (req, res, next) => {
-  let userId = req.params.id;
-  try {
-    let response = await User.findByIdAndDelete(userId);
-    console.log(response);
-    if (response) {
-      res.status(201).send("User Deleted Successfully!");
-    } else {
-      throw new Error("Not Working properly!!!!");
-    }
-  } catch (err) {
-    res.status(500).send("Something went wrong!!! " + err.message);
-  }
-});
-
-authRouter.patch("/updateUser/:id", async (req, res, next) => {
-  let userID = req.params.id;
-  let data = req.body;
-
-  let ALLOWED_UPDATES = [
-    "firstName",
-    "lastName",
-    "gender",
-    "age",
-    "skills",
-    "about",
-  ];
-
-  try {
-    let isUpdated = Object.keys(data).every((e) => ALLOWED_UPDATES.includes(e));
-
-    if (!isUpdated) {
-      throw new Error("Constraint won't allowed");
-    }
-
-    let response = await User.findByIdAndUpdate(userID, data, {
-      returnDocument: false,
-      runValidators: true,
-    });
-
-    res.send(response);
-  } catch (err) {
-    next(err);
-  }
+authRouter.post("/logout", userAuth, async (req, res, next) => {
+  let user = req.user;
+  res.clearCookie("token");
+  res.send(user.firstName + " Logged Out successfully!!");
 });
 
 module.exports = authRouter;
