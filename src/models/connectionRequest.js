@@ -5,10 +5,12 @@ const ConnectionRequestSchema = new mongoose.Schema(
     fromUserID: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "User", //Reference to the User Schema
     },
     toUserID: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "User", //Reference to the User Schema
     },
     status: {
       type: String,
@@ -25,6 +27,8 @@ const ConnectionRequestSchema = new mongoose.Schema(
 );
 
 ConnectionRequestSchema.index({ fromUserID: 1, toUserID: 1 });
+
+ConnectionRequestSchema.index({ toUserID: 1 });
 
 ConnectionRequestSchema.pre("save", function () {
   if (this.fromUserID.equals(this.toUserID)) {

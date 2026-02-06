@@ -61,4 +61,44 @@ requestAuth.post(
   },
 );
 
+requestAuth.post(
+  "/review/:status/:requestID",
+  userAuth,
+  async (req, res, next) => {
+    try {
+      let loggedInUser = req.user;
+      let { status, requestID } = req.params;
+
+      let ALLOWED_STATUS = ["accepted", "rejected"];
+
+      if (!ALLOWED_STATUS.includes(status)) {
+        return res
+          .status(400)
+          .json({ message: "Status not allowed : " + status });
+      }
+
+      let connectionRequest = await requestConnection.findOne({
+        _id: requestID,
+        toUserID: loggedInUser._id, 
+        status: "interested",
+      });
+
+      if (!connectionRequest) {
+        return res
+          .status(404)
+          .json({ message: "No Connection request found!" });
+      }
+
+      connectionRequest.status = status;
+
+      let data = await connectionRequest.save();
+
+      res.send({ message: `${status} successfully!` }, data);
+
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 module.exports = requestAuth;

@@ -4,13 +4,15 @@ const { connectDB } = require("./config/db_connect");
 const cookieParser = require("cookie-parser");
 app.use(express.json());
 app.use(cookieParser());
-const userAuth = require("../src/routes/userAuth");
+const auth = require("../src/routes/auth");
 const requestAuth = require("../src/routes/requestAuth");
 const profileAuth = require("../src/routes/profileAuth");
+const userAuth = require("../src/routes/user");
 
-app.use("/", userAuth);
+app.use("/", auth);
 app.use("/", requestAuth);
 app.use("/", profileAuth);
+app.use("/", userAuth);
 
 // ----------------------------------------------------------------------------------------------------------
 

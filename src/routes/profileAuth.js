@@ -68,9 +68,4 @@ profileRouter.patch("/profile/password", userAuth, async (req, res, next) => {
   }
 });
 
-profileRouter.get("/feed", async (req, res, next) => {
-  let data = await User.find({});
-  res.send(data);
-});
-
 module.exports = profileRouter;
