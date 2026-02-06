@@ -18,7 +18,6 @@ const signupValidation = (req) => {
 };
 
 const validateEditProfileData = (req) => {
-  let { firstName, lastName, age, gender, photoURL, about, skills } = req.body;
 
   let ALLOWED_UPDATES = [
     "firstName",
