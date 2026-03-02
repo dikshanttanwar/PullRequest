@@ -4,8 +4,7 @@ const { userAuth } = require("../middlewares/userAuth");
 const User = require("../models/users");
 const requestConnection = require("../models/connectionRequest");
 
-requestAuth.post(
-  "/request/:status/:toUserID",
+requestAuth.post( "/request/:status/:toUserID",
   userAuth,
   async (req, res, next) => {
     try {
@@ -61,8 +60,7 @@ requestAuth.post(
   },
 );
 
-requestAuth.post(
-  "/review/:status/:requestID",
+requestAuth.post( "/review/:status/:requestID",
   userAuth,
   async (req, res, next) => {
     try {
@@ -93,7 +91,7 @@ requestAuth.post(
 
       let data = await connectionRequest.save();
 
-      res.send({ message: `${status} successfully!` }, data);
+      res.json({ message: `${status} successfully!` }, data);
 
     } catch (err) {
       next(err);

@@ -13,7 +13,27 @@ userRouter.get("/user/requests/received", userAuth, async (req, res, next) => {
         toUserID: loggedInUser._id,
         status: "interested",
       })
-      .populate("fromUserID", "firstName lastName");
+      .populate("fromUserID", "-password");
+
+    res.json({
+      message: `${connectionRequests.length}, Request found!`,
+      connectionRequests,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+userRouter.get("/user/requests/sent", userAuth, async (req, res, next) => {
+  try {
+    let loggedInUser = req.user;
+
+    let connectionRequests = await requestConnection
+      .find({
+        fromUserID: loggedInUser._id,
+        status: "interested",
+      })
+      .populate("toUserID", "-password");
 
     res.json({
       message: `${connectionRequests.length}, Request found!`,
@@ -35,8 +55,8 @@ userRouter.get("/user/connections", userAuth, async (req, res, next) => {
           { toUserID: loggedInUser._id, status: "accepted" },
         ],
       })
-      .populate("fromUserID", "firstName lastName")
-      .populate("toUserID", "firstName lastName");
+      .populate("fromUserID", "-password")
+      .populate("toUserID", "-password");
 
     let data = connections.map((row) => {
       if (row.fromUserID._id.toString() === loggedInUser._id.toString()) {
@@ -54,7 +74,7 @@ userRouter.get("/user/connections", userAuth, async (req, res, next) => {
   }
 });
 
-userRouter.get("/user/feed", userAuth, async (req, res, next) => {
+userRouter.get("/feed", userAuth, async (req, res, next) => {
   try {
     let loggedInUser = req.user;
 
@@ -81,11 +101,11 @@ userRouter.get("/user/feed", userAuth, async (req, res, next) => {
     let allUsers = await User.find({
       _id: { $nin: Array.from(hideUserList) },
     })
-      .select("firstName lastName")
+      .select("-password")
       .skip(skip)
       .limit(limit);
 
-    res.json({ message: "All Users", allUsers });
+    res.json({ message: "Users List", allUsers });
   } catch (err) {
     next(err);
   }

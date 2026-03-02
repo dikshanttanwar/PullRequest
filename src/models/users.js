@@ -3,19 +3,20 @@ const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { default: isURL } = require("validator/lib/isURL");
+mongoose.Schema.Types.String.set("trim", true);
 const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
       required: true,
       minLength: 3,
-      maxLenght: 30,
+      maxLength: 30,
     },
     lastName: {
       type: String,
       required: true,
       minLength: 3,
-      maxLenght: 30,
+      maxLength: 30,
     },
     email: {
       type: String,
@@ -46,21 +47,19 @@ const userSchema = new mongoose.Schema(
     },
     age: {
       type: Number,
-      min: 18,
-      validate(e) {
-        if (e < 18) {
-          throw new Error("Must be 18 years old!");
-        }
-      },
+      min: [18, "Must be 18 years old!"],
+      max: [99, "Max age is 99!"],
     },
     gender: {
       type: String,
       enum: {
-        values: ["Male", "Female"],
+        values: ["male", "female", "other"],
         message: `{VALUE} is not valid gender type!`,
       },
+      lowercase: true,
+      trim: true,
     },
-    photoUrl: {
+    photoURL: {
       type: String,
       validate(e) {
         if (!isURL(e)) {
@@ -70,7 +69,7 @@ const userSchema = new mongoose.Schema(
     },
     about: {
       type: String,
-      maxLength: 255,
+      maxLength: 100,
       default: "Feeling Happy :)",
       validate(e) {
         if (!e) {
