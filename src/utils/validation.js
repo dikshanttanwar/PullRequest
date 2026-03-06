@@ -37,13 +37,11 @@ const validateEditProfileData = (req) => {
   ];
 
   let data = req.body;
-  console.log(Object());
   if (data.length == 0) return;
 
   let isValidEdits = Object.keys(data).every((field) =>
     ALLOWED_UPDATES.includes(field),
   );
-  console.log(isValidEdits);
   if (!isValidEdits) {
     return false;
   }

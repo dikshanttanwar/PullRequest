@@ -7,6 +7,8 @@ const {
 } = require("../utils/validation");
 const User = require("../models/users");
 const bcrypt = require("bcrypt");
+const upload = require("../middlewares/multer");
+const uploadToCloudinary = require("../utils/cloudinary");
 
 profileRouter.get("/profile/view", userAuth, async (req, res, next) => {
   try {
@@ -16,24 +18,38 @@ profileRouter.get("/profile/view", userAuth, async (req, res, next) => {
   }
 });
 
-profileRouter.patch("/profile/edit", userAuth, async (req, res, next) => {
-  try {
-    if (!validateEditProfileData(req)) {
-      throw new Error("Invalid fields!!");
+profileRouter.patch( "/profile/edit", userAuth, upload.single("photoURL"), async (req, res, next) => {
+    try {
+      if (!validateEditProfileData(req)) {
+        throw new Error("Invalid fields!!");
+      }
+
+      let loggedInUser = req.user;
+
+      if (req.file) {
+        console.log(
+          "LOG: Received binary buffer. Initializing Cloudinary stream...",
+        );
+        const result = await uploadToCloudinary(req.file.buffer);
+        loggedInUser.photoURL = result.secure_url;
+        console.log(result.secure_url);
+      }
+
+      Object.keys(req.body).forEach(
+        (key) => (loggedInUser[key] = req.body[key]),
+      );
+
+      await loggedInUser.save();
+
+      res.json({
+        message: `${req.user.firstName}, Your profile is updated!`,
+        user: loggedInUser,
+      });
+    } catch (err) {
+      throw new Error(err.message);
     }
-
-    let loggedInUser = req.user;
-    Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
-    await loggedInUser.save();
-
-    res.json({
-      message: `${req.user.firstName}, Your profile is updated!`,
-      user: loggedInUser,
-    });
-  } catch (err) {
-    throw new Error(err.message);
-  }
-});
+  },
+);
 
 profileRouter.patch("/profile/password", userAuth, async (req, res, next) => {
   try {
@@ -43,11 +59,9 @@ profileRouter.patch("/profile/password", userAuth, async (req, res, next) => {
 
     let loggedInUser = req.user;
     let userInputPassword = req.body.password;
-    console.log(userInputPassword);
     let user = await User.findById(loggedInUser._id).select("+password");
 
     let isPasswordsSame = await user.validatePassword(userInputPassword);
-    console.log(isPasswordsSame);
 
     if (isPasswordsSame) {
       throw new Error("Password cannot be same as old one!!");
