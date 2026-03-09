@@ -18,7 +18,11 @@ profileRouter.get("/profile/view", userAuth, async (req, res, next) => {
   }
 });
 
-profileRouter.patch( "/profile/edit", userAuth, upload.single("photoURL"), async (req, res, next) => {
+profileRouter.patch(
+  "/profile/edit",
+  userAuth,
+  upload.single("photoURL"),
+  async (req, res, next) => {
     try {
       if (!validateEditProfileData(req)) {
         throw new Error("Invalid fields!!");
@@ -52,22 +56,25 @@ profileRouter.patch( "/profile/edit", userAuth, upload.single("photoURL"), async
 );
 
 profileRouter.patch("/profile/password", userAuth, async (req, res, next) => {
+  const { currentPassword, password } = req.body;
+
   try {
     if (!validatePassword(req)) {
       throw new Error("Password not valid!");
     }
 
     let loggedInUser = req.user;
-    let userInputPassword = req.body.password;
     let user = await User.findById(loggedInUser._id).select("+password");
 
-    let isPasswordsSame = await user.validatePassword(userInputPassword);
+    let isPasswordsSame = await user.validatePassword(currentPassword);
 
-    if (isPasswordsSame) {
-      throw new Error("Password cannot be same as old one!!");
+    if (!isPasswordsSame) {
+      return res
+        .status(403)
+        .json({ message: "Caution! : Wrong Current Password" });
     }
 
-    loggedInUser.password = await bcrypt.hash(userInputPassword, 10);
+    loggedInUser.password = await bcrypt.hash(password, 10);
 
     await loggedInUser.save();
 

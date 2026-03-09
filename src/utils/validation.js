@@ -96,7 +96,7 @@ const validateEditProfileData = (req) => {
 };
 
 const validatePassword = (req) => {
-  let ALLOWED_UPDATES = ["password"];
+  let ALLOWED_UPDATES = ["password", "currentPassword"];
 
   let isValidField = Object.keys(req.body).every((field) =>
     ALLOWED_UPDATES.includes(field),
